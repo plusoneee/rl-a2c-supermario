@@ -6,7 +6,6 @@ from mario import Mario
 RENDER = False
 env = gym_super_mario_bros.make('SuperMarioBros-v0')
 env = apply_wrapper_env(env)
-# hyper parameters
 GAMMA = 0.99
 
 # load agent
@@ -16,20 +15,23 @@ mario = Mario(
     discount_factor=GAMMA
 )
 
+mario.model.train()
 for i_episode in range(3000):
+    print('=='*15)
+    print('* Episode number :', i_episode)
     # observed space
     observation = env.reset()
     # add batch dim
     observation = torch.FloatTensor(observation).unsqueeze(0)
+    done = False
 
-    while True:
+    while not done:
         # Environment rendered after crossing return threshold
         if RENDER:
             env.render()
 
         # observation = observation.to(mario.device)
         value, action = mario.choose_action(observation)
-        done = False
 
         # load next state
         observation_, reward, done, info = env.step(action)
@@ -39,8 +41,7 @@ for i_episode in range(3000):
         mario.memory.push(observation, action, reward, value.max()) # greedy choice
 
         if done:
-            env.reset()
-            # convert new observation to tensor
+            
             obs = observation_
             
             # state-action value for new observation [V_(t+1)]
@@ -51,6 +52,10 @@ for i_episode in range(3000):
             
             # update agent
             advantage = mario.update(Q_value, i_episode)
-        
+
         # update
         observation = observation_
+
+    if i_episode % 200 == 0:
+        torch.save(mario.model.state_dict(), f'./chkpt/a2c-ep-{i_episode}.chkpt')
+    

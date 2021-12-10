@@ -67,7 +67,6 @@ class CutomReward(gym.Wrapper):
         else:
             life = f'Alive <{info["life"]}>'
 
-        print(f'-'*40)
         print(f"* Log@ {info['time']}, Status: {life}")
         print(f"* Reward: {reward/10.}\n* Coin: {info['coins']} \n* Score: {info['score']}\n* (X, Y):({info['x_pos']}, {info['y_pos']})")
 
